@@ -13,6 +13,7 @@
     <!-- creation React component(ReactApp) -->
     <script type="text/babel">
       const { useState } = React;
+
       const ReactApp = () => {
         const [animals, setAnimals] = useState([]);
         const animalsChoices = [
@@ -23,28 +24,83 @@
           "Panda",
           "Tigre",
         ];
+        const [show, setShow] = useState(false);
 
-        const addAnimal = () => {
-          let randomChoiseIndex = Math.floor(
-            Math.random() * animalsChoices.length
-          );
-          let checkAnimal = true;
-
-          while (checkAnimal && animalsChoices.length !== animals.length) {
-            /* console.log("randomChoiseIndex", randomChoiseIndex); */
-            if (!animals.includes(animalsChoices[randomChoiseIndex])) {
-              checkAnimal = false;
-              setAnimals([...animals, animalsChoices[randomChoiseIndex]]);
-            } else
-              randomChoiseIndex = Math.floor(
-                Math.random() * animalsChoices.length
-              );
-          }
+        const handleOnClose = () => {
+          setShow(false);
         };
+        const handleOnConfirm = (newAnimal) => {
+          /* console.log("newAnimal", newAnimal); */
+          setAnimals([...animals, newAnimal]);
+          setShow(false);
+        };
+
+        function Modal({
+          title,
+          content,
+          show = false,
+          onClose = () => {},
+          onConfirm = () => {},
+        }) {
+          const [newAnimal, setNewAnimal] = useState("");
+
+          const handleOnChange = (e) => {
+            setNewAnimal(e.target.value);
+          };
+
+          return (
+            show &&
+            ReactDOM.createPortal(
+              <div className="modal-container">
+                <div className="modal">
+                  <h2>{title}</h2>
+                  <input
+                    type="text"
+                    value={newAnimal}
+                    onChange={handleOnChange}
+                  />
+
+                  <div>
+                    <button onClick={() => onConfirm(newAnimal)}>
+                      Conferma
+                    </button>
+                    <button onClick={onClose}>Annulla</button>
+                  </div>
+                </div>
+              </div>,
+              document.body
+            )
+          );
+        }
+
+        /* const addRandomAnimal = () => {
+                           let randomChoiseIndex = Math.floor(
+                             Math.random() * animalsChoices.length
+                           );
+                           let checkAnimal = true;
+
+                           while (checkAnimal && animalsChoices.length !== animals.length) {
+                             // console.log("randomChoiseIndex", randomChoiseIndex);
+                             if (!animals.includes(animalsChoices[randomChoiseIndex])) {
+                               checkAnimal = false;
+                               setAnimals([...animals, animalsChoices[randomChoiseIndex]]);
+                             } else
+                               randomChoiseIndex = Math.floor(
+                                 Math.random() * animalsChoices.length
+                               );
+                           }
+                         }; */
 
         return (
           <>
-            <button onClick={addAnimal}>Aggiungi Animale</button>
+            {/*<button onClick={addRandomAnimal}>Aggiungi Animale</button>*/}
+            <button onClick={() => setShow(true)}>Aggiungi Animale</button>
+            <Modal
+              title="titolo di prova"
+              show={show}
+              onClose={handleOnClose}
+              onConfirm={handleOnConfirm}
+            />
 
             <details>
               <summary>Animali</summary>
