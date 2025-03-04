@@ -12,8 +12,50 @@
 
     <!-- creation React component(ReactApp) -->
     <script type="text/babel">
+      const { useState } = React;
       const ReactApp = () => {
-        return <h2>test</h2>;
+        const [animals, setAnimals] = useState([]);
+        const animalsChoices = [
+          "Cane",
+          "Gatto",
+          "Pappagallo",
+          "Cavallo",
+          "Panda",
+          "Tigre",
+        ];
+
+        const addAnimal = () => {
+          let randomChoiseIndex = Math.floor(
+            Math.random() * animalsChoices.length
+          );
+          let checkAnimal = true;
+
+          while (checkAnimal && animalsChoices.length !== animals.length) {
+            /* console.log("randomChoiseIndex", randomChoiseIndex); */
+            if (!animals.includes(animalsChoices[randomChoiseIndex])) {
+              checkAnimal = false;
+              setAnimals([...animals, animalsChoices[randomChoiseIndex]]);
+            } else
+              randomChoiseIndex = Math.floor(
+                Math.random() * animalsChoices.length
+              );
+          }
+        };
+
+        return (
+          <>
+            <button onClick={addAnimal}>Aggiungi Animale</button>
+
+            <details>
+              <summary>Animali</summary>
+              <ul>
+                {animals.map((animal, i) => (
+                  <li key={i}>{animal}</li>
+                ))}
+              </ul>
+            </details>
+          </>
+        );
       };
     </script>
 
