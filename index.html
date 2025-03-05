@@ -26,40 +26,54 @@
         ];
         const [show, setShow] = useState(false);
         const [isLoading, setIsLoading] = useState(false);
-        console.log("animals", animals);
+        const [results, setResults] = useState(null);
+
+        /* console.log("animals", animals); */
 
         const handleOnClose = () => {
           setShow(false);
         };
         const handleOnConfirm = async (animalName) => {
-          console.log("animalName", animalName);
           setIsLoading(true);
-          /* setAnimals([...animals, newAnimal]); */
-          if (animalName) {
-            try {
-              const fetchAnimalName = await fetch(
-                `https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`
-              ).then((res) => {
-                setIsLoading(false);
-                return res.json();
-              });
+          setResults(null);
+          /* setAnimals([...animals, animalName]); */
+          if (!animalName) {
+            setIsLoading(false);
+            return;
+          }
+          try {
+            const fetchAnimalName = await fetch(
+              `https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`
+            );
+            const animalData = await fetchAnimalName.json();
+            console.log("animalData", animalData);
+            setResults(animalData.length);
+            if (animalData.length > 0) {
+              let i = 0;
+              while (
+                i < animalData.length &&
+                animals.find((a) => a.name === animalData[i].name)
+              ) {
+                i++;
+              }
 
-              console.log("fetchAnimalName", fetchAnimalName);
-              if (fetchAnimalName && fetchAnimalName.length > 0)
+              if (i < animalData.length) {
                 setAnimals([
                   ...animals,
                   {
-                    name: fetchAnimalName[0].name,
-                    description: fetchAnimalName[0].description,
-                    image: fetchAnimalName[0].image,
+                    name: animalData[i].name,
+                    description: animalData[i].description,
+                    image: animalData[i].image,
                   },
                 ]);
-            } catch (error) {
-              throw new Error(error.message);
+              }
+              setShow(false);
             }
+          } catch (error) {
+            console.error("Errore nel fetch:", error);
           }
 
-          setShow(false);
+          setIsLoading(false);
         };
 
         function Modal({
@@ -81,17 +95,23 @@
               <div className="modal-container">
                 <div className="modal">
                   <h2>{title}</h2>
-                  <input
-                    type="text"
-                    value={newAnimal}
-                    onChange={handleOnChange}
-                  />
+                  <div id="new-animal-input">
+                    <input
+                      type="text"
+                      value={newAnimal}
+                      onChange={handleOnChange}
+                    />
+                  </div>
+                  <div className="alert-msg">
+                    {isLoading ? <span>Ricerca in corso...</span> : ""}
+                    {results === 0 ? <span>0 risultati trovati</span> : ""}
+                  </div>
 
-                  <div>
+                  <div className="button-section">
+                    <button onClick={onClose}>Annulla</button>
                     <button onClick={() => onConfirm(newAnimal)}>
                       Conferma
                     </button>
-                    <button onClick={onClose}>Annulla</button>
                   </div>
                 </div>
               </div>,
@@ -101,29 +121,29 @@
         }
 
         /* const addRandomAnimal = () => {
-                           let randomChoiseIndex = Math.floor(
-                             Math.random() * animalsChoices.length
-                           );
-                           let checkAnimal = true;
+                                 let randomChoiseIndex = Math.floor(
+                                   Math.random() * animalsChoices.length
+                                 );
+                                 let checkAnimal = true;
 
-                           while (checkAnimal && animalsChoices.length !== animals.length) {
-                             // console.log("randomChoiseIndex", randomChoiseIndex);
-                             if (!animals.includes(animalsChoices[randomChoiseIndex])) {
-                               checkAnimal = false;
-                               setAnimals([...animals, animalsChoices[randomChoiseIndex]]);
-                             } else
-                               randomChoiseIndex = Math.floor(
-                                 Math.random() * animalsChoices.length
-                               );
-                           }
-                         }; */
+                                 while (checkAnimal && animalsChoices.length !== animals.length) {
+                                   // console.log("randomChoiseIndex", randomChoiseIndex);
+                                   if (!animals.includes(animalsChoices[randomChoiseIndex])) {
+                                     checkAnimal = false;
+                                     setAnimals([...animals, animalsChoices[randomChoiseIndex]]);
+                                   } else
+                                     randomChoiseIndex = Math.floor(
+                                       Math.random() * animalsChoices.length
+                                     );
+                                 }
+                               }; */
 
         return (
           <>
             {/*<button onClick={addRandomAnimal}>Aggiungi Animale</button>*/}
             <button onClick={() => setShow(true)}>Aggiungi Animale</button>
             <Modal
-              title="titolo di prova"
+              title="Aggiungi un animale"
               show={show}
               onClose={handleOnClose}
               onConfirm={handleOnConfirm}
