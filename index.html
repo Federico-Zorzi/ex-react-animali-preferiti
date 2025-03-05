@@ -27,6 +27,7 @@
         const [show, setShow] = useState(false);
         const [isLoading, setIsLoading] = useState(false);
         const [results, setResults] = useState(null);
+        const [errorMessage, setErrorMessage] = useState("");
 
         /* console.log("animals", animals); */
 
@@ -34,13 +35,14 @@
           setShow(false);
         };
         const handleOnConfirm = async (animalName) => {
-          setIsLoading(true);
           setResults(null);
-          /* setAnimals([...animals, animalName]); */
-          if (!animalName) {
-            setIsLoading(false);
-            return;
-          }
+
+          if (!animalName.trim()) return;
+
+          setErrorMessage("");
+          setIsLoading(true);
+          /* setAnimals(currValue => [...currValue, animalName]); */
+
           try {
             const fetchAnimalName = await fetch(
               `https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`
@@ -48,32 +50,43 @@
             const animalData = await fetchAnimalName.json();
             /* console.log("animalData", animalData); */
             setResults(animalData.length);
-            if (animalData.length > 0) {
-              let i = 0;
-              while (
-                i < animalData.length &&
-                animals.find((a) => a.name === animalData[i].name)
-              ) {
-                i++;
-              }
-
-              if (i < animalData.length) {
-                setAnimals([
-                  ...animals,
-                  {
-                    name: animalData[i].name,
-                    description: animalData[i].description,
-                    image: animalData[i].image,
-                  },
-                ]);
-              }
-              setShow(false);
+            if (animalData.length === 0) {
+              throw new Error("Nessun animale trovato");
             }
-          } catch (error) {
-            console.error("Errore nel fetch:", error);
-          }
 
-          setIsLoading(false);
+            let i = 0;
+            while (
+              i < animalData.length &&
+              animals.find((a) => a.name === animalData[i].name)
+            ) {
+              i++;
+            }
+
+            if (i < animalData.length) {
+              setAnimals((currValue) => [
+                ...currValue,
+                {
+                  name: animalData[i].name || "Nome non trovato",
+                  description:
+                    animalData[i].description || "Descrizione non trovata",
+                  image: animalData[i].image || null,
+                },
+              ]);
+            } else
+              throw new Error(
+                "Questo animale è già presente tra gli animali aggiunti"
+              );
+            setShow(false);
+          } catch (err) {
+            console.error(err);
+            let message =
+              err.message !== `NetworkError when attempting to fetch resource.`
+                ? err.message
+                : `Non è stato possibile effettuare la ricerca dell'animale`;
+            setErrorMessage(message);
+          } finally {
+            setIsLoading(false);
+          }
         };
 
         function Modal({
@@ -84,7 +97,6 @@
           onConfirm = () => {},
         }) {
           const [newAnimal, setNewAnimal] = useState("");
-
           const handleOnChange = (e) => {
             setNewAnimal(e.target.value);
           };
@@ -103,8 +115,11 @@
                     />
                   </div>
                   <div className="alert-msg">
-                    {isLoading ? <span>Ricerca in corso...</span> : ""}
-                    {results === 0 ? <span>0 risultati trovati</span> : ""}
+                    {isLoading && <span>Ricerca in corso...</span>}
+                    {/* {results === 0 && <span>0 risultati trovati</span>} */}
+                    {errorMessage && (
+                      <span className="error-message">{errorMessage}</span>
+                    )}
                   </div>
 
                   <div className="button-section">
@@ -161,9 +176,11 @@
             <div>
               {animals.map((animal, i) => (
                 <div key={i} className="card">
-                  <div className="card-image">
-                    <img src={animal.image} alt={animal.name} />
-                  </div>
+                  {animal.image && (
+                    <figure className="card-image">
+                      <img src={animal.image} alt={animal.name} />
+                    </figure>
+                  )}
                   <div className="card-content">
                     <div className="card-title">
                       <h2>{animal.name}</h2>
