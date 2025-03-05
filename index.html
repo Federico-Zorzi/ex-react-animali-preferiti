@@ -25,13 +25,40 @@
           "Tigre",
         ];
         const [show, setShow] = useState(false);
+        const [isLoading, setIsLoading] = useState(false);
+        console.log("animals", animals);
 
         const handleOnClose = () => {
           setShow(false);
         };
-        const handleOnConfirm = (newAnimal) => {
-          /* console.log("newAnimal", newAnimal); */
-          setAnimals([...animals, newAnimal]);
+        const handleOnConfirm = async (animalName) => {
+          console.log("animalName", animalName);
+          setIsLoading(true);
+          /* setAnimals([...animals, newAnimal]); */
+          if (animalName) {
+            try {
+              const fetchAnimalName = await fetch(
+                `https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`
+              ).then((res) => {
+                setIsLoading(false);
+                return res.json();
+              });
+
+              console.log("fetchAnimalName", fetchAnimalName);
+              if (fetchAnimalName && fetchAnimalName.length > 0)
+                setAnimals([
+                  ...animals,
+                  {
+                    name: fetchAnimalName[0].name,
+                    description: fetchAnimalName[0].description,
+                    image: fetchAnimalName[0].image,
+                  },
+                ]);
+            } catch (error) {
+              throw new Error(error.message);
+            }
+          }
+
           setShow(false);
         };
 
@@ -106,10 +133,28 @@
               <summary>Animali</summary>
               <ul>
                 {animals.map((animal, i) => (
-                  <li key={i}>{animal}</li>
+                  <li key={i}>{animal.name}</li>
                 ))}
               </ul>
             </details>
+
+            <div>
+              {animals.map((animal, i) => (
+                <div key={i} className="card">
+                  <div className="card-image">
+                    <img src={animal.image} alt={animal.name} />
+                  </div>
+                  <div className="card-content">
+                    <div className="card-title">
+                      <h2>{animal.name}</h2>
+                    </div>
+                    <div className="card-body">
+                      <p>{animal.description}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </>
         );
       };

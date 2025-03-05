@@ -57,3 +57,22 @@ img {
   padding: 20px;
   border-radius: 5px;
 }
+
+.card {
+  background-color: #e4e4e4;
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+
+  display: flex;
+  gap: 2rem;
+  height: 250px;
+}
+
+.card-image,
+.card-image img {
+  height: 100%;
+}
+
+.card-content {
+  flex-grow: 1;
+}
