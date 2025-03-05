@@ -46,7 +46,7 @@
               `https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`
             );
             const animalData = await fetchAnimalName.json();
-            console.log("animalData", animalData);
+            /* console.log("animalData", animalData); */
             setResults(animalData.length);
             if (animalData.length > 0) {
               let i = 0;
